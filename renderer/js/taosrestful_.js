@@ -130,10 +130,10 @@ module.exports = {
         return this.sendRequest(`SHOW ${dbName}.TABLES  ${likeStr}`, payload)
     },
     disTable(tableName, dbName, payload) {
-        return this.sendRequest(`DESCRIBE ${dbName}.${tableName}`, payload)
+        return this.sendRequest(`DESCRIBE ${dbName}.\`${tableName}\``, payload)
     },
     dropTable(tableName, dbName, payload, safe = false) {
-        return this.sendRequest(`DROP TABLE ${safe?'IF EXISTS':''} ${dbName}.${tableName}`, payload)
+        return this.sendRequest(`DROP TABLE ${safe?'IF EXISTS':''} ${dbName}.\`${tableName}\``, payload)
     },
     insertData(tableName, data, dbName = null) {
         let dbN = dbName ? dbName : this.database
@@ -144,7 +144,7 @@ module.exports = {
             values += value + ','
         }
         // console.log(`INSERT INTO ${dbN}.${tableName} (${fields.slice(0,-1)}) VALUES (${values.slice(0,-1)})` )
-        return this.sendRequest(`INSERT INTO ${dbN}.${tableName} (${fields.slice(0,-1)}) VALUES (${values.slice(0,-1)})`)
+        return this.sendRequest(`INSERT INTO ${dbN}.\`${tableName}\` (${fields.slice(0,-1)}) VALUES (${values.slice(0,-1)})`)
     },
     timeWhere(primaryKey, where, startTime, endTime) {
         where = where || ''
@@ -178,6 +178,7 @@ module.exports = {
                 return {'res': false, 'msg': 'distable error', 'code': 99}
             }
 
+            primaryKey=primaryKey==null?"_ts":primaryKey;
             //组装where子句  //TODO
             where = this.timeWhere(primaryKey, where, startTime, endTime)
             let sqlStr = 'SELECT '
@@ -185,11 +186,11 @@ module.exports = {
             if (fields && fields.length > 0) {
                 fieldStr = ''
                 fields.forEach(function (field) {
-                    fieldStr += field + ','
+                    fieldStr +="`"+ field + '`,'
                 });
                 fieldStr = fieldStr.slice(0, -1)
             }
-            sqlStr += fieldStr + ` FROM ${dbName}.${tableName} `
+            sqlStr += fieldStr + ` FROM ${dbName}.\`${tableName}\` `
             if (where) {
                 sqlStr += ` WHERE ${where} `
             }
@@ -225,7 +226,7 @@ module.exports = {
         where = this.timeWhere(primaryKey, where, startTime, endTime)
         let sqlStr = 'SELECT '
         let fieldStr = 'count(*)'
-        sqlStr += fieldStr + ` FROM ${dbName}.${tableName} `
+        sqlStr += fieldStr + ` FROM ${dbName}.\`${tableName}\` `
         if (where) {
             sqlStr += ` WHERE ${where} `
         }
